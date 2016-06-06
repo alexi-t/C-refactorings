@@ -32,14 +32,15 @@ namespace JsonFormatter
                         AttributeList(
                             SingletonSeparatedList(
                                 Attribute(
-                                    IdentifierName("JsonProperty"))
+                                    IdentifierName("DataMember"))
                                 .WithArgumentList(
                                     AttributeArgumentList(
                                         SingletonSeparatedList(
                                             AttributeArgument(
                                                 LiteralExpression(
                                                     SyntaxKind.StringLiteralExpression,
-                                                    Literal(oldName)))))))));
+                                                    Literal(oldName))).
+                                                    WithNameEquals(NameEquals(IdentifierName("Name")))))))));
 
             var newProp = node.
                 WithIdentifier(Identifier(newName)).

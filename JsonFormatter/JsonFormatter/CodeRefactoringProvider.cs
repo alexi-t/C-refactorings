@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Rename;
 using Microsoft.CodeAnalysis.Text;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+using System.Text.RegularExpressions;
 
 namespace JsonFormatter
 {
@@ -26,22 +27,22 @@ namespace JsonFormatter
 
             // Find the node at the selection.
             var node = root.FindNode(context.Span);
-
+            
             // Only offer a refactoring if the selected node is a type declaration node.
             var typeDecl = node as TypeDeclarationSyntax;
-            if (typeDecl != null)
+            if (typeDecl != null && char.IsLower(typeDecl.Identifier.ValueText[0]))
             {
                 // For any type declaration node, create a code action to reverse the identifier text.
-                var action = CodeAction.Create("Format for JSON.NET", c => FormatTypeAsync(context, typeDecl, c));
+                var action = CodeAction.Create("Format pasted json", c => FormatTypeAsync(context, typeDecl, c));
 
                 // Register this code action.
                 context.RegisterRefactoring(action);
             }
 
             var propDecl = node as PropertyDeclarationSyntax;
-            if (propDecl != null)
+            if (propDecl != null && char.IsLower(propDecl.Identifier.ValueText[0]))
             {
-                var action = CodeAction.Create("Format for JSON.NET", c => FormatPropertyAsync(context, propDecl, c));
+                var action = CodeAction.Create("Format pasted json", c => FormatPropertyAsync(context, propDecl, c));
 
                 // Register this code action.
                 context.RegisterRefactoring(action);
@@ -82,14 +83,15 @@ namespace JsonFormatter
                         AttributeList(
                             SingletonSeparatedList(
                                 Attribute(
-                                    IdentifierName("JsonProperty"))
+                                    IdentifierName("DataMember"))
                                 .WithArgumentList(
                                     AttributeArgumentList(
                                         SingletonSeparatedList(
                                             AttributeArgument(
                                                 LiteralExpression(
                                                     SyntaxKind.StringLiteralExpression,
-                                                    Literal(oldName)))))))));
+                                                    Literal(oldName))).
+                                                    WithNameEquals(NameEquals(IdentifierName("Name")))))))));
 
             var newProp = propDecl.
                 WithIdentifier(Identifier(newName)).
